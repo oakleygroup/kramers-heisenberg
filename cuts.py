@@ -10,18 +10,28 @@ def print_and_plot_rixs_cuts(h5_filename, ex_cuts=None, em_cuts=None):
         rixs_map = f['SIGMA_TOTAL'][:]
 
     if ex_cuts is not None:
-        for E in ex_cuts:
-            idx = np.abs(E_ex - E).argmin()
-            profile = rixs_map[idx, :]  # emission profile at fixed incident energy
+     for E in ex_cuts:
+        idx = np.abs(E_ex - E).argmin()
+        profile = rixs_map[idx, :]  # emission profile at fixed incident energy
 
-            plt.figure()
-            plt.plot(E_em, profile)
-            plt.xlabel('Emission Energy (eV)')
-            plt.ylabel('Intensity (arb.)')
-            plt.title(f'Emission profile at Incident Energy = {E_ex[idx]:.2f} eV')
-            plt.grid(True)
-            plt.show()
+        plt.figure()
+        plt.plot(E_em, profile)
+        plt.xlabel('Emission Energy (eV)')
+        plt.ylabel('Intensity (arb.)')
+        plt.title(f'Emission profile at Incident Energy = {E_ex[idx]:.2f} eV')
+        plt.grid(True)
+        plt.show()
 
+        # Save to text file: columns -> Emission Energy, Intensity
+        filename = f'emission_cut_{E_ex[idx]:.2f}eV.txt'
+        data_to_save = np.column_stack((E_em, profile))
+        np.savetxt(filename, data_to_save, header='Emission Energy (eV)    Intensity (arb.)')
+        print(f'Saved emission cut data to {filename}')
+        
+           
+
+ 
+ 
     if em_cuts is not None:
         for E in em_cuts:
             idx = np.abs(E_em - E).argmin()
@@ -34,6 +44,13 @@ def print_and_plot_rixs_cuts(h5_filename, ex_cuts=None, em_cuts=None):
             plt.title(f'Incident profile at Emission Energy = {E_em[idx]:.2f} eV')
             plt.grid(True)
             plt.show()
+
+# Save to text file: columns -> Emission Energy, Intensity
+            filename = f'emission_cut_{E_ex[idx]:.2f}eV.txt'
+            data_to_save = np.column_stack((E_em, profile))
+            np.savetxt(filename, data_to_save, header='Emission Energy (eV)    Intensity (arb.)')
+            print(f'Saved emission cut data to {filename}')
+
 
 
 if __name__ == '__main__':
