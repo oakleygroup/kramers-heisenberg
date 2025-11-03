@@ -200,7 +200,7 @@ sigma_total = prefactor_au * np.einsum('ixyz,i,z->iz', both_terms, E_ex_grid, E_
 #sigma_total_normalized = sigma_total / sigma_total.max()
 
 # 9) Save results alongside SIGMA_TOTAL
-with h5py.File("rixs_map_with_decomp_intermediate.h5", "w") as f:
+with h5py.File("rixs_map_with_decomp_allstates.h5", "w") as f:
     f.create_dataset("E_EX", data=E_ex_grid)
     f.create_dataset("E_EM", data=E_em_grid)
     f.create_dataset("SIGMA_TOTAL", data=sigma_total)
@@ -208,16 +208,8 @@ with h5py.File("rixs_map_with_decomp_intermediate.h5", "w") as f:
     f.create_dataset("C_FULL_PER_N", data=C_full_per_n)       # (M, N_n)
     f.create_dataset("FRACTION_PER_N", data=fractions)       # (M, N_n)
     f.create_dataset("INTERMEDIATE_ENERGIES", data=En)
-
-with h5py.File("rixs_map_with_decomp_final.h5", "w") as f:
-    f.create_dataset("E_EX", data=E_ex_grid)
-    f.create_dataset("E_EM", data=E_em_grid)
-    f.create_dataset("SIGMA_TOTAL", data=sigma_total)
-    f.create_dataset("C_FULL_PER_N", data=C_full_per_n)       # intermediate states
-    f.create_dataset("FRACTION_PER_N", data=fractions)        # intermediate states
     f.create_dataset("C_FULL_PER_F", data=C_full_per_f)       # final states
     f.create_dataset("FRACTION_PER_F", data=fractions_f)      # final states
-    f.create_dataset("INTERMEDIATE_ENERGIES", data=En)
     f.create_dataset("FINAL_ENERGIES", data=Ef)
 
 with h5py.File("rixs_map.h5", "w") as f:
