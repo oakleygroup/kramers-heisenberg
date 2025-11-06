@@ -48,7 +48,7 @@ ax1.stackplot(
 ax2.plot(E_ex, rixs_cut_norm, color='white', lw=2.5, label='RIXS cut (norm.)', zorder=5)
 ax1.set_xlabel("Incident Energy (eV)")
 ax1.set_ylabel("Fractional contribution")
-ax2.set_ylabel("Normalized RIXS intensity (arb. units)", color='white')
+ax2.set_ylabel("Normalized RIXS intensity (arb. units)", color='black')
 ax1.set_title(f"Intermediate-state fractional contributions with RIXS cut at Emission = {em_actual:.2f} eV")
 
 lines1, labels1 = ax1.get_legend_handles_labels()
@@ -115,7 +115,7 @@ ax1.stackplot(
 ax2.plot(E_ex, rixs_cut_norm, color='white', lw=2.5, label='RIXS cut (norm.)', zorder=5)
 ax1.set_xlabel("Incident Energy (eV)")
 ax1.set_ylabel("Fractional contribution")
-ax2.set_ylabel("Normalized RIXS intensity (arb. units)", color='white')
+ax2.set_ylabel("Normalized RIXS intensity (arb. units)", color='black')
 ax1.set_title(f"Final-state fractional contributions with RIXS cut at Emission = {em_actual:.2f} eV")
 
 lines1, labels1 = ax1.get_legend_handles_labels()
