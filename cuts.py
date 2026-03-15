@@ -24,7 +24,7 @@ def print_and_plot_rixs_cuts(h5_filename, ex_cuts=None, em_cuts=None):
 
         # Save to text file: columns -> Emission Energy, Intensity
         filename = f'emission_cut_{E_ex[idx]:.2f}eV.txt'
-        data_to_save = np.column_stack((E_em, profile))
+        data_to_save = np.column_stack((E_ex, profile))
         np.savetxt(filename, data_to_save, header='Emission Energy (eV)    Intensity (arb.)')
         print(f'Saved emission cut data to {filename}')
         
@@ -46,7 +46,7 @@ def print_and_plot_rixs_cuts(h5_filename, ex_cuts=None, em_cuts=None):
             plt.show()
 
 # Save to text file: columns -> Emission Energy, Intensity
-            filename = f'emission_cut_{E_ex[idx]:.2f}eV.txt'
+            filename = f'emission_cut_{E_em[idx]:.2f}eV.txt'
             data_to_save = np.column_stack((E_em, profile))
             np.savetxt(filename, data_to_save, header='Emission Energy (eV)    Intensity (arb.)')
             print(f'Saved emission cut data to {filename}')
