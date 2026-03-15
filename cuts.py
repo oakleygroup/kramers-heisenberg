@@ -3,11 +3,39 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 
-def print_and_plot_rixs_cuts(h5_filename, ex_cuts=None, em_cuts=None):
+def print_and_plot_rixs_cuts(h5_filename, ex_cuts=None, em_cuts=None, max_int=False):
     with h5py.File(h5_filename, 'r') as f:
         E_ex = f['E_EX'][:]
         E_em = f['E_EM'][:]
         rixs_map = f['SIGMA_TOTAL'][:]
+
+    if max_int:
+
+        # find global maximum index
+        max_idx = np.unravel_index(np.argmax(rixs_map), rixs_map.shape)
+        ex_idx, em_idx = max_idx
+
+        print(f"Maximum intensity at:")
+        print(f"  Incident energy = {E_ex[ex_idx]:.2f} eV")
+        print(f"  Emission energy = {E_em[em_idx]:.2f} eV")
+
+        profile = rixs_map[:, em_idx]
+
+        plt.figure()
+        plt.plot(E_ex, profile)
+        plt.xlabel('Incident Energy (eV)')
+        plt.ylabel('Intensity (arb.)')
+        plt.title(f'Incident profile at max intensity emission = {E_em[em_idx]:.2f} eV')
+        plt.grid(True)
+        plt.show()
+
+        filename = f'incident_cut_max_em_{E_em[em_idx]:.2f}eV.txt'
+        data_to_save = np.column_stack((E_ex, profile))
+        np.savetxt(filename, data_to_save,
+                   header='Incident Energy (eV)    Intensity (arb.)')
+
+        print(f'Saved max-intensity cut to {filename}')
+
 
     if ex_cuts is not None:
      for E in ex_cuts:
@@ -58,7 +86,12 @@ if __name__ == '__main__':
     parser.add_argument('--h5', type=str, required=True, help='Path to rixs_map.h5 file')
     parser.add_argument('--ex-cuts', type=float, nargs='*', help='List of excitation energy cuts (eV)')
     parser.add_argument('--em-cuts', type=float, nargs='*', help='List of emission energy cuts (eV)')
+    parser.add_argument(
+    '--max-int',
+    action='store_true',
+    help='Make an incident-energy cut at the emission energy with maximum intensity'
+)
 
     args = parser.parse_args()
 
-    print_and_plot_rixs_cuts(args.h5, ex_cuts=args.ex_cuts, em_cuts=args.em_cuts)
+    print_and_plot_rixs_cuts(args.h5, ex_cuts=args.ex_cuts, em_cuts=args.em_cuts, max_int=args.max_int)
