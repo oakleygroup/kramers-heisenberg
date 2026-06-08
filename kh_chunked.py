@@ -1,3 +1,5 @@
+#still in progress - for huge files ATM.
+
 import matplotlib.pyplot as plt
 import opt_einsum as oe
 import sys
@@ -23,7 +25,7 @@ soc_energies = (soc_energies_au - soc_energies_au[0]) * au2ev
 #Change for each system, range is exclusionary to second number:
 N_i = range(1, 2) #initial state 3d^10 4f^14 5f^0 [ground state only, SO State 1]
 N_n = range(198, 338) #intermediate states 3d^9 4f^14 5f^1 [SO State 198 - 337]
-N_f = range(2, 198) #number of final states 3d^10 4f^13 5f^1 [SO State 170 - 197]
+N_f = range(170, 198) #number of final states 3d^10 4f^13 5f^1 [SO State 170 - 197]
 
 # Convert to zero-indexing
 N_i = range(N_i.start - 1, N_i.stop - 1)
