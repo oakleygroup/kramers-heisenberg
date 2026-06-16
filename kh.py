@@ -16,14 +16,14 @@ c_au = 137.035999084
 
 
 ##Change file name here######
-h5name_file = h5py.File('UO2Cl4_3d4f.rassi.h5', 'r')
+h5name_file = h5py.File('/Users/meagan/Downloads/RIXS_UO2Cl4_3d4f.rassi.h5', 'r')
 soc_energies_au = h5name_file['SOS_ENERGIES'][:]
 soc_energies = (soc_energies_au - soc_energies_au[0]) * au2ev
 
 #Change for each system, range is exclusionary to second number:
 N_i = range(1, 2) #initial state 3d^10 4f^14 5f^0 [ground state only, SO State 1]
 N_n = range(198, 338) #intermediate states 3d^9 4f^14 5f^1 [SO State 198 - 337]
-N_f = range(170, 198) #number of final states 3d^10 4f^13 5f^1 [SO State 170 - 197]
+N_f = range(1, 198) #number of final states 3d^10 4f^13 5f^1 [SO State 170 - 197]
 
 #store OpenMolcas state numbering for storage in h5 file
 intermediate_so_states = np.array(list(N_n))
@@ -232,7 +232,6 @@ def plot_rixs_map_from_h5(h5_filename):
         E_em = f['E_EM'][:]
         E_ex = f['E_EX'][:]
         rixs_map = f['SIGMA_TOTAL'][:]
-
     #print(f"Intensity range: min={rixs_map.min()}, max={rixs_map.max()}")
 
     plt.figure(figsize=(8, 6))
