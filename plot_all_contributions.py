@@ -100,3 +100,119 @@ plt.ylabel("Intensity (arb. units)")
 plt.title("Per-final-state intensity - Top contributors")
 plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.savefig('intensity_contributions_final.png', bbox_inches='tight', dpi=600)
+
+### Orbital contributions for final states
+#setting key, colors and label for each orbital type
+
+orbitals = {
+    "δ": (r"5f$_\delta$", "#ffdbc7"),
+    "φ": (r"5f$_\phi$", "#f7a482"),
+    "π*": (r"5f$_{\pi^*}$", "#d85f4c"),
+    "σ*": (r"5f$_{\sigma^*}$", "#b41529"),
+}
+
+
+#This is a dictionary/key that says each of those orbital indices correspond to an orbital of X character. Need to edit this based on the system and the character of each SO state index. These numbers are directly from the OpenMolcas output file, but the range specified includes the starting, but excludes the stop; i.e. (1, 3) means only states 1 and 2.
+
+# 1 - 197
+state_key_f = [
+    (1,  3, "δ"),
+    (4,  25, "φ"),
+    (26, 27, "δ"),
+    (28, 29, "φ"),
+    (29, 30, "π*"),
+    (35, 60, "φ"),
+    (60, 170, "σ*"),
+]
+
+##This next part collects from the hdf5 file th SO index.
+
+f_index = {state: i for i, state in enumerate(SO_f)}
+
+## This creates an empty (np.zeros_like) array full of zeros for each orbital character - later we add each contribution to these.
+
+orbital_contrib = {
+    orb: np.zeros_like(C_full_per_f[:, 0])
+    for orb in orbitals
+}
+
+#sum over each SO index and add each result (based on orbital type) to the array.
+
+for start, stop, orb in state_key_f:
+
+    cols = [f_index[s] for s in range(start, stop)]
+
+    orbital_contrib[orb] += np.sum(
+        C_full_per_f[:, cols],
+        axis=1
+    )
+
+#PLOT
+
+plt.figure(figsize=(10,6))
+
+for orb, (label, color) in orbitals.items():
+    plt.plot(
+        E_ex,
+        orbital_contrib[orb],
+        label=label,
+        color=color,
+        linewidth=2,
+    )
+
+plt.xlabel("Incident energy (eV)")
+plt.ylabel("Intensity (arb. units)")
+plt.title("Orbital contributions - Final states")
+plt.legend(loc="upper left", bbox_to_anchor=(1,1))
+plt.savefig(
+    "orbital_contributions_final.png",
+    bbox_inches="tight",
+    dpi=600,
+)
+
+
+### Orbital contributions for intermediate states
+
+#States 198 - 337
+# Replace with intermediate state assignment
+state_key_n = [
+     (199, 205, "δ"),
+     (300, 337, "φ"),
+]
+
+n_index = {state: i for i, state in enumerate(SO_n)}
+
+orbital_contrib = {
+    orb: np.zeros_like(C_full_per_n[:, 0])
+    for orb in orbitals
+}
+
+for start, stop, orb in state_key_n:
+
+    cols = [n_index[s] for s in range(start, stop)]
+
+    orbital_contrib[orb] += np.sum(
+        C_full_per_n[:, cols],
+        axis=1
+    )
+
+plt.figure(figsize=(10,6))
+
+for orb, (label, color) in orbitals.items():
+    plt.plot(
+        E_ex,
+        orbital_contrib[orb],
+        label=label,
+        color=color,
+        linewidth=2,
+    )
+
+plt.xlabel("Incident energy (eV)")
+plt.ylabel("Intensity (arb. units)")
+plt.title("Orbital contributions - Intermediate states")
+plt.legend(loc="upper left", bbox_to_anchor=(1,1))
+plt.savefig(
+    "orbital_contributions_intermediate.png",
+    bbox_inches="tight",
+    dpi=600,
+)
