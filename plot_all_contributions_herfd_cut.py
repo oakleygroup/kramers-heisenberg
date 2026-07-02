@@ -213,3 +213,81 @@ plt.title(f"Absolute final-state contributions\n(E_em={E_em_max:.2f} eV)")
 plt.legend(loc='upper left', bbox_to_anchor=(1,1))
 
 plt.savefig("herfd_absolute_final.png", bbox_inches='tight')
+
+# HERFD-CUT ORBITAL GROUPED STACKPLOT
+# Orbital contributions (HERFD cut)
+
+orbitals = {
+    "δ": (r"5f$_\delta$", "#ffdbc7"),
+    "φ": (r"5f$_\phi$", "#f7a482"),
+    "π*": (r"5f$_{\pi^*}$", "#d85f4c"),
+    "σ*": (r"5f$_{\sigma^*}$", "#b41529"),
+}
+
+state_key_f = [
+    (1, 3, "δ"),
+    (4, 25, "φ"),
+    (26, 27, "δ"),
+    (28, 29, "φ"),
+    (29, 30, "π*"),
+    (35, 60, "φ"),
+    (60, 170, "σ*"),
+]
+
+# map SO numbers -> column index
+f_index = {state: i for i, state in enumerate(SO_f)}
+
+# normalize exactly as for the absolute final-state plot
+norm = np.max(np.sum(C_full_per_f, axis=1))
+C_full_norm = C_full_per_f / norm
+
+orbital_contrib = {
+    orb: np.zeros_like(C_full_norm[:, 0])
+    for orb in orbitals
+}
+
+for start, stop, orb in state_key_f:
+
+    cols = [f_index[s] for s in range(start, stop) if s in f_index]
+
+    if cols:
+        orbital_contrib[orb] += np.sum(
+            C_full_norm[:, cols],
+            axis=1
+        )
+
+stack_data = []
+labels = []
+colors = []
+
+for orb, (label, color) in orbitals.items():
+    stack_data.append(orbital_contrib[orb])
+    labels.append(label)
+    colors.append(color)
+
+stack_data = np.array(stack_data)
+
+plt.figure(figsize=(10,6), dpi=300)
+
+plt.stackplot(
+    E_ex,
+    stack_data,
+    colors=colors,
+    labels=labels,
+    alpha=0.9,
+)
+
+plt.plot(E_ex, herfd_norm, color="black", lw=5, zorder=10)
+plt.plot(E_ex, herfd_norm, color="#fcfbf4", lw=4, zorder=11)
+
+plt.xlabel("Incident energy (eV)")
+plt.ylabel("Normalized intensity")
+plt.title("HERFD orbital contributions")
+
+plt.legend(loc="upper left", bbox_to_anchor=(1,1))
+
+plt.savefig(
+    "herfd_orbital_contributions.png",
+    dpi=300,
+    bbox_inches="tight",
+)
