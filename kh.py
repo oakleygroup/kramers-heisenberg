@@ -1,12 +1,21 @@
 import matplotlib.pyplot as plt
-#contributions done#
 import sys
+import argparse
 import numpy as np
 import jax.numpy as jnp
 import pandas as pd
 import h5py
 from molcas_suite.extractor import make_extractor as make_molcas_extractor
 np.set_printoptions(precision=17)
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--et',
+    action='store_true',
+    help='Also plot RIXS map using energy transfer (E_ex - E_em) on the y-axis'
+)
+
+args = parser.parse_args()
 
 ### Unitary transformation for energies
 au2ev = 2.7211386021e1
@@ -16,7 +25,7 @@ c_au = 137.035999084
 
 
 ##Change file name here######
-h5name_file = h5py.File('/Users/meagan/Downloads/RIXS_UO2Cl4_3d4f.rassi.h5', 'r')
+h5name_file = h5py.File('UO2Cl4_3d4f_cif.rassi.h5', 'r')
 soc_energies_au = h5name_file['SOS_ENERGIES'][:]
 soc_energies = (soc_energies_au - soc_energies_au[0]) * au2ev
 
@@ -24,6 +33,7 @@ soc_energies = (soc_energies_au - soc_energies_au[0]) * au2ev
 N_i = range(1, 2) #initial state 3d^10 4f^14 5f^0 [ground state only, SO State 1]
 N_n = range(198, 338) #intermediate states 3d^9 4f^14 5f^1 [SO State 198 - 337]
 N_f = range(1, 198) #number of final states 3d^10 4f^13 5f^1 [SO State 170 - 197]
+
 
 #store OpenMolcas state numbering for storage in h5 file
 intermediate_so_states = np.array(list(N_n))
@@ -40,12 +50,12 @@ Ef = soc_energies[N_f] # final state energies
 
 #range of E_em and E_em for RIXS map - change based on the experimental data
 #M5edge: E_em_grid= 3100 - 3200; E_ex = 3500-3600
-E_em_grid = np.linspace(3140, 3220, 1000)
-E_ex_grid = np.linspace(3540, 3620, 1000)
+#E_em_grid = np.linspace(3140, 3220, 1000)
+#E_ex_grid = np.linspace(3540, 3620, 1000)
 
 #M4edge: E_em_grid= 3300 - 3400; E_ex = 3700-3800
-#E_em_grid = np.linspace(3340, 3370, 1000)#[::-1]
-#E_ex_grid = np.linspace(3740, 3760, 1000)#[::-1]
+E_em_grid = np.linspace(3340, 3370, 1000)#[::-1]
+E_ex_grid = np.linspace(3740, 3760, 1000)#[::-1]
 
 gamma_n = 3.2 #broadening of the intermediate state, eV
 gamma_f = 1.5 #broadening of the final state, eV; should be smaller than gamma_n
@@ -72,7 +82,7 @@ edipmom_complex_ni_z = edipmom_complex_z[np.ix_(N_n, N_i)]
 # ⟨f|Dx|n⟩ --> rows = N_f, cols = N_n
 edipmom_complex_fn_x = edipmom_complex_x[np.ix_(N_f, N_n)]
 edipmom_complex_fn_y = edipmom_complex_y[np.ix_(N_f, N_n)]
-edipmom_complex_fn_z = edipmom_complex_z[np.ix_(N_f, N_n)]
+
 
 mu_ni = np.stack([edipmom_complex_ni_x, edipmom_complex_ni_y, edipmom_complex_ni_z], axis=0)
 mu_fn = np.stack([edipmom_complex_fn_x, edipmom_complex_fn_y, edipmom_complex_fn_z], axis=0)
@@ -226,20 +236,30 @@ with h5py.File("rixs_map.h5", "w") as f:
     f.create_dataset("SIGMA_TOTAL", data=sigma_total)
 plt.rcParams.update({'font.size': 20})
 
-def plot_rixs_map_from_h5(h5_filename):
+def plot_rixs_map_from_h5(h5_filename, plot_et=False):
 
     with h5py.File(h5_filename, 'r') as f:
         E_em = f['E_EM'][:]
         E_ex = f['E_EX'][:]
         rixs_map = f['SIGMA_TOTAL'][:]
-    #print(f"Intensity range: min={rixs_map.min()}, max={rixs_map.max()}")
 
-    plt.figure(figsize=(8, 6))
-    vmin=0
+    plt.rcParams.update({'font.size': 20})
+
+    vmin = 0
     vmax = np.max(rixs_map)
 
-    pcm = plt.pcolormesh(E_ex, E_em, rixs_map.T,  # transpose so emission on y-axis
-                         shading='auto', cmap='inferno', vmin=vmin, vmax=vmax)
+
+    plt.figure(figsize=(8, 6))
+
+    pcm = plt.pcolormesh(
+        E_ex,
+        E_em,
+        rixs_map.T,
+        shading='auto',
+        cmap='inferno',
+        vmin=vmin,
+        vmax=vmax
+    )
 
     plt.xlabel('Incident Energy (eV)', fontsize=20)
     plt.ylabel('Emission Energy (eV)', fontsize=20)
@@ -248,7 +268,41 @@ def plot_rixs_map_from_h5(h5_filename):
     cbar.set_label('Intensity (arb.)')
 
     plt.tight_layout()
-    plt.savefig('_test_M5_RIXS_UO2.png')
+    plt.savefig('_test_RIXS_UO2.png', dpi=300)
     plt.show()
 
-plot_rixs_map_from_h5('rixs_map.h5')
+    if plot_et:
+
+        # Energy transfer / energy loss
+        # ΔE = E_ex - E_em
+        energy_transfer = E_ex[None, :] - E_em[:, None]
+
+        # Corresponding incident-energy grid
+        incident_energy = np.broadcast_to(
+            E_ex[None, :],
+            energy_transfer.shape
+        )
+
+        plt.figure(figsize=(8, 6))
+
+        pcm = plt.pcolormesh(
+            incident_energy,
+            energy_transfer,
+            rixs_map.T,
+            shading='auto',
+            cmap='inferno',
+            vmin=vmin,
+            vmax=vmax
+        )
+
+        plt.xlabel('Incident Energy (eV)', fontsize=20)
+        plt.ylabel('Energy Transfer (eV)', fontsize=20)
+
+        cbar = plt.colorbar(pcm)
+        cbar.set_label('Intensity (arb.)')
+
+        plt.tight_layout()
+        plt.savefig('_test_RIXS_UO2_energy_transfer.png', dpi=300)
+        plt.show()
+
+plot_rixs_map_from_h5('rixs_map.h5', plot_et=args.et)
